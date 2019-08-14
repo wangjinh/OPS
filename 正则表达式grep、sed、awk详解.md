@@ -287,4 +287,17 @@ passwd -d u01
 awk -F : '$2==""{print $1}' /etc/shadow ##打印密码为空的用户
 awk -F : '$7~"bash$"{print $1,$3,$7}' /etc/passwd ##匹配$7为bash结束行
 awk -F : '$7!~"bash$"{print $1,$3,$7}' /etc/passwd
+
+```
+cut
+```
+Cut 输入字符中指定的字段或指定的范围。若处理的是字段，则定界符隔开的即为各字段，而输出时字段也以给定的定界符隔开。默认的定界符为制表字符（TAB）。		
+cut OPTION... [FILE]...
+	OPTION:
+		-d CHAR：用来指定分隔符，默认为tab键；
+		-f FIELDS：挑选出需要的字段；
+			#：指定的单个字段；
+			#-#：连续的多个字段；
+			#,#：离散的多个字段；
+cut -d ' ' -f10,30  ifconfig.txt ##以空格为分隔符，挑选出字段
 ```
