@@ -48,9 +48,9 @@ a\.b      ##匹配a.b，但不能匹配ajb
 BRE与ERE元字符对应表
 ```
 基本正则表达式	扩展正则表达式
-\?	   			  	 ?
-\+	   			  	 +
-\|	   			 	 |
+\?	   			 ?
+\+	   			 +
+\|	   			 |
 \{ \}				{ }
 \( \)				( )
 ```
@@ -106,6 +106,8 @@ sed
 1.改：
 
 语法：sed '/正则匹配条件/s/old/new/g' 文件
+
+sed -i  '/^SELINUX/s/=.*/=disabled/g' /etc/selinux/config   ##修改，不显示
 sed 's/dhcp/static/g' /etc/sysconfig/network-scripts/ifcfg-eth1 ##只是显示，不修改
 sed -i 's/dhcp/static/g' /etc/sysconfig/network-scripts/ifcfg-eth1 ##只修改，不显示
 sed -i 's/dhcp/static/g' ip ##将所有的dhcp替换为static
