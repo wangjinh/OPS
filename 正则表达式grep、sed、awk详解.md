@@ -248,6 +248,7 @@ ifconfig eth1 |awk '{print NF}'
 自定义变量案例：
 awk 'BEGIN{test="www.linuxfan.cn";print test}'
 awk -v test="linuxfan.cn" 'BEGIN{print test}'
+awk -F: -v x=root '$1==x{print $1,$2}' /etc/shadow #取出root用户的密码
 
 printf的使用：
 
