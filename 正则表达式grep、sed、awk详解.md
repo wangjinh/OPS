@@ -203,11 +203,13 @@ tail -1 /etc/passwd |awk -F ':' 'BEGIN{OFS="---"}{print $1,$6,$7}'  ##OFS指定�
 ifconfig eth1 |awk -F '[ :]+' 'NR==2 {print $4}'
 ifconfig eth1 |awk -F '[ :]+' 'NR==2 {print "eth1_ip="$4}' ##可以加入显示内容
 awk 'BEGIN {print "line one \nline two\nline three"}'  ## \n 表示换行符
+
 匹配范围（ranges）：指定的匹配范围，格式为part1,part2
 
 awk -F : '$3==3,$3==10{print $1,$3,$7}' /etc/passwd
 awk -F : '$1=="root",$1=="adm"{print $1,$3,$7}' /etc/passwd
 awk -F : '/^r/,/^a/{print $1,$3,$7}' /etc/passwd
+awk -F: '$3>=1000{print $1}' /etc/passwd
 
 awk区块原理：
 
