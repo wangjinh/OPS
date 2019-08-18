@@ -288,7 +288,8 @@ awk -F : '$2=="!!"{print $1,$2}' /etc/shadow ##检查未初始化密码的用户
 passwd -d u01 
 awk -F : '$2==""{print $1}' /etc/shadow ##打印密码为空的用户
 awk -F : '$7~"bash$"{print $1,$3,$7}' /etc/passwd ##匹配$7为bash结束行
-awk -F : '$7!~"bash$"{print $1,$3,$7}' /etc/passwd
+awk -F : '$7!~"bash$"{print $1,$3,$7}' /etc/passwd   显示当前计算机中所有账户的用户名称，属主，使用的shell
+ps aux | awk '{if($8 == "Z"){print $2,$11}}'  # 查找linux系统中的僵尸进程，awk判断ps命令输出的第8列为Z是,显示该进程的PID和进程命令
 
 ```
 cut
