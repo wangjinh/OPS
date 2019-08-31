@@ -1,0 +1,25 @@
+1. 判断登陆用户是否是root
+
+#!/bin/bash
+#
+USER=$(who | awk '{print $1}'
+
+if [ "$USER" == "root" ]; then
+        echo "The login user is $USER."
+else
+        echo "The login user is $USER."
+fi
+
+2. 判断Apache 是否开启，若未开启则开启
+
+#!/bin/bash
+#
+Nginx=$(ps -ef | grep nginx |awk -F '{print $1}' | grep nginx | uniq)
+if [ "$Nginx" == "nginx" ]; then
+	echo "$Nginx is up."
+else
+	echo "nginx is down."
+	systemctl start nginx
+	echo "nginx is starting."
+fi
+
