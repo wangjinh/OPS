@@ -224,7 +224,7 @@ for i in {1..254}; do
 	# 每隔0.3秒ping一次，一共ping 1 次，并以1毫秒为单位设置ping的超时时间
     if ping -c1 -i0.3 -W1 192.168.170.$i  &>/dev/null; then
        	echo "192.168.170.$i is up"
-   	else
+    else
        	echo "192.168.170.$i is down"
    	fi
 done
@@ -234,7 +234,6 @@ done
 > /tmp/iplist.log   #每次运行前清空该文件内容
 read -p "Please input a netid:(eg:192.168.34.0) " netid  #输入IP网段
 netid=`echo $netid | sed -nr 's#(.*)\..*#\1#p'` #读取ip网段，截取前三段
-echo netid=$netid   #变量赋值
 for id in {1..254}; do
         {
         if ping -c1 -w1  $netid.$id &>/dev/null ;then
@@ -246,6 +245,13 @@ for id in {1..254}; do
         }&                  #并行执行
 done
 wait
+
+反撇号等效于$()，都是用于执行 Shell 命令。
+
+#取出ip地址前三段方法：
+echo $netid | sed -nr 's#(.*)\..*#\1#p'
+echo $netid | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' #-o只显示匹配字符
+
 
 关于sed -nr 's#(.*)\..*#\1#p'参数详解 
 注释：
