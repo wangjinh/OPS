@@ -2,7 +2,7 @@
 
 #!/bin/bash
 #
-USER=$(who | awk '{print $1}'
+USER=$(who | awk '{print $1}')
 
 if [ "$USER" == "root" ]; then
         echo "The login user is $USER."
@@ -14,12 +14,667 @@ fi
 
 #!/bin/bash
 #
-Nginx=$(ps -ef | grep nginx |awk -F '{print $1}' | grep nginx | uniq)
-if [ "$Nginx" == "nginx" ]; then
-	echo "$Nginx is up."
+nginx=$(ps -ef | grep nginx |awk -F '{print $1}' | grep nginx | uniq)
+if [ "$nginx" == "nginx" ] then
+	echo "$nginx is up."
 else
 	echo "nginx is down."
 	systemctl start nginx
 	echo "nginx is starting."
 fi
 
+3. 请键入yes 显示yes 键入no，显示no，输入其它，显示error
+#！/bin/bash
+#
+read -p "Input is chars: " cho
+case $cho in
+	yes)
+		echo "Your choose is yes."
+		
+	no)
+		echo "Your choose is no."
+		
+	*)
+		echo "error."
+		
+esac
+
+
+检查192.168.170.0网段有多少多个主机存活？
+
+#!/bin/bash
+#
+
+for i in {1..254} do
+	if ping -c 1 -W 2 192.168.170.$i &>/dev/null; then
+		echo "192.168.170.$i is up."
+	else
+		echo "192.168.170.$i is down."
+	fi
+done
+
+
+#!/bin/bash
+#
+myping () {
+  ping -c 1 -w 2 192.168.170.$i &> /dev/null
+  if [ $? -eq 0 ]; then
+  	echo "192.168.170.$i is up."
+  else		
+  	echo "192.168.170.$i is down."
+  fi
+}
+for i in `seq 1 254`; do
+	myping 
+done
+
+任意网段主机ping测试
+
+#!/bin/bash
+#
+read -p "please input a netid " netid
+netid=`echo $netid | sed -nr 's#(.*)\..*#\1#p'`
+for id in `seq 1 254` do {
+  if ping -c 1 -t 0.3 -W 1 $netid.$id &> /dev/null; then
+    echo "$netid.$id is up."
+  else
+  	echo "$netid.$id is down."
+  fi
+  }&
+done
+wait
+
+注意：反撇号``等效于$()，都是用于执行 Shell 命令。
+
+#取出ip地址前三段方法：
+echo $netid | sed -nr 's#(.*)\..*#\1#p'
+echo $netid | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' #-o只显示匹配字符
+
+7.依次提示用户输入3个整数,脚本根据数字大小依次排序输出3个数字
+#!/bin/bash
+#
+read -p "input a number: " a
+read -p "input a number: " b
+read -p "nput a number: " c
+tmp=0
+if [ $a -gt $b ]; then
+   tmp=$a
+   a=$b
+   b=$tmp
+fi
+if [ $a -gt $c ]; then
+   tmp=$a
+   a=$c
+   c=$tmp
+fi
+if [ $b -gt $c ]; then
+   tmp=$b
+   b=$c
+   c=$tmp
+fi
+echo  "排序后数据(从小到大)为:$a,$b,$c"
+
+
+063_显示本机 Linux 系统上所有开放的端口列表
+
+#!/bin/bash
+#从端口列表中观测有没有没用的端口,有的话可以将该端口对应的服务关闭,防止意外的攻击可能性
+
+ss -nutlp |awk '{print $1,$5}' | awk -F"[: ]" '{print "协议:"$1,"端口号:"$nF}' | uniq
+
+# awk '{print $1,$5} 输出进程类型名，端口号
+# awk -F"[: ]" '{print "协议:"$1,"端口号:"$nF}' 以[: ]为分隔符，打印第1列、最后1列
+# grep "[0-9]" 加红
+# uniq 去重复
+
+
+2019-9-2
+
+1、LInUX系统软件安装和卸载的常见方法
+2、Windows和LInUX常用的远程连接工具有那些
+3、如何修改LInUX的IP地址、网关和主机名
+4、编写脚本实现以下功能；
+
+每天早上5点开始做备份
+要备份的是/var/mylog里所有文件和目录可以压缩进行备份
+备份可以保存到别一台器上192、168、1、2 FTP帐号 aaa 密码 bbb ,每天的备份文件要带有当天的日期标记
+#!/bin/bash
+#
+mkdir /backup && cd /backup
+
+tar acf backup_`date +%F`_mylog.tar.gz /var/mylog
+ftp -i -n 192.168.1.2 << EOF
+user aaa bbb
+put backup_`date +%F`_mylog.tar.gz 
+close
+bye
+EOF
+
+添加定时任务
+crontab -e
+0 05 * * * /bin/bash /server/scripts/backup.sh
+
+ftp -i  -n  IP_ADDRESS
+user USERnAME PASSWORD
+
+2. 每周一下午三点将/tmp/logs目录下面的后缀为*.log的所有文件rsync同步到备份服务器192.168.1.100中同样的目录下面，crontab配置项该如何写：
+0 15 * * 1 rsync -azvP /tmp/logs/*.log root@192.168.1.100:/tmp/logs/
+
+3. 找到/tmp/目录下面的所有名称以”_s1.jpg”结尾的普通文件，如果其修改日期在一天内，则将其打包到/tmp/back.tar.gz文件中
+
+find /tmp -type f -mtime 1 *_s1.jpg | xargs tar zcf /tmp/back.tar.gz
+
+4. 写出如何给apache增加virtualhost，让访问http://www.test.com和http://www.test.cn的时候，都打开/var/www/html目录下面的文件：
+ServerAdmin admin@abc.com
+DocumentRoot "/var/www/html"
+Servername www.test.com
+ServerAlias test.cn
+ErrorLog "logs/bbs—error_log"
+CustomLog "logs/bbs-access_log" common
+
+5. 配置mysql服务器的时候，配置了auto_increment_increment=3，请问这里的3意味着什么？
+
+auto_increment是用于主键自动增长的，从3开始增长，3表示自增的起始值
+
+6. 用一条命令显示本机eth0网卡的IP地址，不显示其它字符
+
+ifconfig ens192 | grep inet | awk -F " " 'NR==2{print $2}' 
+
+ifconfig ens192 | grep inet | awk -F "[ :]+" 'NR==1{print $3}'
+
+ifconfig ens192 | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | awk 'NR==1{print $1}'
+
+7. 请详细说明keepalived的故障切换工作原理
+
+这种故障切换是通过VRRP协议来实现的，主节点会按一定的时间间隔发送心跳信息的广播包，告诉备节点自己的存活状态信息，当主节点发生故障时，备节点在一段时间内就收到广播包，从而判断主节点出现故障，因此会调用自身的接管程序来接管主节点的IP资源及服务，当主节点恢复时，备节点会主动释放资源，恢复到接管前的状态，从而来实现主备故障切换。
+
+8. 写出一个curl命令，访问指定服务器61.135.169.121上的如下URL：http://www.baidu.com/s?wd=test，访问的超时时间是20秒：
+
+curl --connect-timeout 20 http://www.baidu.com/s?wd=test
+
+9. 用netstat命令配合其他shell命令，按照源IP统计所有到80端口的ESTABLISHED状态链接的个数，输出结果类似（第一列为连接数，第二列为IP）：
+netstat -tnlp | grep ESTABLISHED | grep :80 | cut -d: f1 | uniq | sort -nr
+
+9、列举一个实际生产的例子，网站访问速度慢是因为数据库访问慢导致的
+
+问题情况描述：
+突然有一天，有同事反应，网站访问速度很慢，有时候会出现打不开网站的情况，刷新等待好长时间后又正常打开。
+
+解决步骤：
+登陆数据库执行show full processlist 看到有很多相同的查询动作且征对同一张表，因此确定网站打不开的原因是这个，故将此IP禁止访问。日常工作中避免此类问题发生解决方法如下：可以将数据库读写分离；安装数据缓存服务器，尽量将大部分的请求不直接对接数据库。
+
+编写脚本实现将/usr/local/test目录下大于100K文件，将它拷贝到/tmp目录下
+
+第一种方法：有问题
+#!/bin/bash
+SIZE=$(ls -l | awk '{print $5}')
+for i in `ls /test/`; do
+  if [ -f $i ] && [ $SIZE -gt 100  ]; then
+  		cp /test/$i /tmp
+  else
+      echo error
+  fi    
+done
+
+第二种方法：
+#!/bin/bash
+#
+cd /usr/local/test/
+FILE=`ls -l | awk '{if($5>100){print $NF}}'`
+for i in $FILE; do
+  mv $i /tmp/
+done
+
+
+2.5 一个实例
+
+#!/bin/bash
+read -p "input your score：" score
+
+if [ $score -ge 0 ]&&[ $score -lt 60 ];then
+        echo "sorry,you are lost!"
+elif [ $score -ge 60 ]&&[ $score -lt 85 ];then
+        echo "just soso!"
+elif [ $score -le 100 ]&&[ $score -ge 85 ];then
+        echo "good job!"
+else
+        echo "input score is wrong , the range is [0-100]!"
+fi
+
+当然，上面的实例也可以用 -a 来改写：
+
+#!/bin/bash
+read -p "input your score：" score
+
+if [ $score -ge 0 -a $score -lt 60 ];then
+        echo "sorry,you are lost!"
+elif [ $score -ge 60 -a $score -lt 85 ];then
+        echo "just soso!"
+elif [ $score -le 100 -a $score -ge 85 ];then
+        echo "good job!"
+else
+        echo "input score is wrong , the range is [0-100]!"
+fi
+
+复杂逻辑判断
+条件表达式中可能有多个条件，需要使用与或非等逻辑操作。
+-a 　 　　　　　 与 
+-o　　　　　　　 或 
+!　　　　　　　　非
+
+1、用shell脚本批量建立Linux用户
+
+实现要求：创建用户student1到student50,指定组为student组！而且每个用户需要设定一个不同的密码！
+
+脚本实现如下：
+#!/bin/bash
+#
+usergroup student
+for i in student{1..50}; do
+     useradd -G student student$i
+     echo "student$i" | passwd --stdin student$i
+done
+
+
+shell自定义创建用户名和密码
+
+#!/bin/bash
+#
+read -p "please input username: " user
+read -p "please input password: " password
+useradd $user
+if [ $? -eq 0 ];then 
+  echo password | passwd --stdin $user
+else 
+  echo "$user is already exists"
+fi
+
+2019-09-03
+
+23、写一个脚本，添加一个新组为student.实现批量添加20个用户，用户名为user01-20，密码为user后面跟5个随机字符
+方法一：
+#!/bin/bash
+#
+groupadd student
+passwd=`echo $RANDOM | md5sum | cut 1-5`
+for id in `seq 1 9`; do
+	useradd -G student user0$id
+	echo user$passwd | passwd --stdin user0$id
+done
+
+for id in `seq 10 20`; do
+	useradd -G student user$id
+	echo user$passwd | passwd --stdin user$id
+done
+
+方法二：
+#！/bin/bash
+#
+groupadd student
+for i in `seq 1 20`; do
+  if [ $i -lt 10 ]; then
+     useradd -G student user0$i
+     echo user$passwd | passwd --stdin user0$id
+     echo "useradd is user0$i finished"
+  else
+     useradd -G student user$i
+     echo user$passwd | passwd --stdin user$id
+     echo "useradd is user$i finished"
+  fi
+done
+
+
+随机数
+
+1.如何生产随机数
+系统变量：RANDOM,默认会产生0-32767的随机数
+echo $[$RANDOM%2]产生0-1之间的随机数
+
+echo $[$RANDOM%40+1]  #产生1到39的随机数
+
+echo $[$RANDOM%90+10] #产生10到99的随机数
+
+1、如何过滤出已知当前目录下oldboy中的所有一级目录(不包含子目录，即只能是一级目录)
+方法1：find ./ -type d -maxdepth 1
+	-maxdepth levels      #目录级别(非负整数)下降
+方法2：ls -l | grep ^d
+方法3：ls -F | grep /$
+	-F  #在列出的文件名称后加一符号；例如可执行文件则加 "*", 目录则加 "/"
+
+方法4：ls -d */
+
+
+2.扫描多台服务器的一个端口是否打开
+
+cat << EOF > ip.txt
+192.168.170.8
+192.168.170.9
+192.168.170.10
+192.168.170.22
+EOF 
+
+cat << EOF > port.txt 
+22
+2379
+80
+323
+EOF 
+
+cat port.sh
+#!/bin/bash
+#
+for ip in `more ip.txt`; do
+  for port in `more port.txt`; do
+        nc -zvw2 $ip $port
+        if [ $? -eq 0 ]; then
+        	echo "$ip $port is Connection succeeded."
+        else
+         	echo "$ip $port is Connection refused."
+        fi
+  done
+done
+
+select in 循环用来增强交互性，它可以显示出带编号的菜单，用户输入不同的编号就可以选择不同的菜单，并执行不同的功能。
+
+示例1：
+#!/bin/bash
+echo "what is your favouriat os ?"
+select i in "linux" "macos" "ubunt" "android"; do
+	echo $i
+done
+
+示例2：
+#!/bin/bash
+echo "what is your favourite os ?"
+select name in "linux" "macos" "ubunt" "android"; do
+	case $name in
+		linux)
+			echo "you use linuxos."
+			break
+			;;
+		macos)
+			echo "you use macos."
+			break
+			;;
+		ubunt)
+			echo "you use ubuntos."
+			break
+			;;
+		android)
+			echo "you use android."
+			break
+			;;
+		*)
+            echo "输入错误，请重新输入"
+            break
+            ;;
+	easc
+done
+
+
+#!/bin/bash
+#
+for i in `seq 1 1000`; do
+    n1=$[$RANDOM%10]
+    n2=$[$RANDOM%10]
+    n3=$[$RANDOM%10]
+    n4=$[$RANDOM%10]
+    n5=$[$RANDOM%10]
+    n6=$[$RANDOM%10]
+    n7=$[$RANDOM%10]
+    n8=$[$RANDOM%10]
+    echo 139$n1$n2$n3$n4$n5$n6$n7$n8 >> /root/telphone.txt
+
+done
+
+
+Shell脚本实现自动修改IP地址和主机名
+
+read -p "IP地址：" IP
+read -p "GATEWAY地址：" GW
+read -p "DNS地址：" DNS
+read -p "HOSTNAME：" HOSTNAME
+
+sed -i "s/IPADDR=.*/IPADDR=$IP/g" /etc/sysconfig/network-scripts/ifcfg-ens37
+sed -i "s/GATEWAY=.*/GATEWAY=$GW/g" /etc/sysconfig/network-scripts/ifcfg-ens37
+sed -i "s/DNS=.*/DNS=$DNS/g" /etc/sysconfig/network-scripts/ifcfg-ens37
+echo "$HOSTNAME" > /etc/hostname 
+
+if [ $? -eq 0 ]; then
+  echo "OK"
+  systemctl restart network
+else
+  echo "执行过程有误"
+  exit 2
+fi
+
+企业面试题1：
+
+已知下面的字符串是通过RANDOM随机数变量md5sum|cut-c 1-4截取后的结果，请破解这些字符串对应的md5sum前的RANDOM对应数字？
+0020
+2102
+a3da
+1f6d
+
+解题思路：通过每次传递一个参数的方式，来实现依次破解$RANDOM的范围为0-32767
+#!/bin/bash    
+#Author: wangsir
+#Site: gitbub.com/wangjinh/
+array=(
+        0020
+        2102
+        a3da
+        1f6d
+)
+for n in {0..32767}; do
+        MD5=`echo $n | md5sum | cut -c 1-4`
+        for i in ${array[@]}; do  #使用@ 或 * 可以获取数组中的所有元素
+            if [ "$MD5" == "$i" ]; then
+                echo "$n and $i" >> c.log
+                break #找到之后，中断退出，循环进入下一轮。
+            else
+                echo "$n no."
+            fi
+        done
+done
+
+扩展：
+  获取数组的长度: ${#array[*]} 或 ${#array[@]}
+
+
+企业面试题2：批量检查多个网站地址是否正常 ？？？？
+
+要求：shell数组方法实现，检测策略尽量模拟用户访问思路
+http://www.baidu.com
+http://www.taobao.com
+http://www.51liuzw.com
+http://192.168.50.199
+
+#!/bin/bash
+#Author: wang
+#Site: https://github.com/wangjinh/
+
+array=(
+http://www.baidu.com
+http://www.taobao.com
+http://www.51liuzw.com
+http://192.168.50.199
+)
+for n in ${array[*]}; do
+        URL=`curl -I -m 2 $n 2> /dev/null | egrep "200|302" | wc -l`
+        if [ "$URL" -eq 1 ]; then
+                echo "$n is OK"
+        else
+                echo "$n is not OK"
+        fi
+done
+
+结果：
+    #sh test.sh
+    http://www.baidu.com is OK
+    http://www.taobao.com is OK
+    http://www.51liuzw.com is not OK
+    http://192.168.50.199 is not OK
+
+
+企业面试题3：：用shell处理以下内容
+
+1、按单词出现频率降序排序！
+2、按字母出现频率降序排序！
+
+文件内容如下c.txt：
+the squid project provides a number of resources toassist users design,implement and support squid installations. Please browsethe documentation and support sections for more infomation
+1.按单词出现频率降序排序！
+    解决思路：把空格换为换行符，并排序统计   
+sed 's/ /\n/g' c.txt |sort | uniq -c
+
+2.按字母出现频率降序排序！
+   解决思路：使用grep -o "\w"，把单词拆开并去除种各符号 
+cat c.txt | grep -o "\w" | sort | uniq -c
+
+注：
+-o 仅仅匹配 
+\w 匹配任意一个字符和数字
+
+编写shell脚本，把/test/目录下的所有目录（只需要一级）拷贝到/tmp/目录下；
+
+方法一：
+#!/bin/bash
+#
+cd /test/
+for i in `ls`; do
+  if [ -d $i ]; then
+     cp -r $i /tmp
+  fi
+done
+
+
+编写shell脚本，判断输入的IP是否正确（IP的规则是，n1.n2.n3.n4，其中1<n1<255, 0<n2<255, 0<n3<255, 0<n4<255）。
+
+未完成？？？？
+
+6. #! /bin/bash
+
+checkip() {
+
+        if echo $1 |egrep -q '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' ; then
+                a=`echo $1 | awk -F. '{print $1}'`
+                b=`echo $1 | awk -F. '{print $2}'`
+                c=`echo $1 | awk -F. '{print $3}'`
+                d=`echo $1 | awk -F. '{print $4}'`
+
+                for n in $a $b $c $d; do
+                        if [ $n -ge 255 ] || [ $n -le 0 ]; then
+                                echo "the number of the IP should less than 255 and greate than 0"
+                                return 2
+                        fi
+                done
+        else
+
+                echo "The IP you input is something wrong, the format is like 192.168.100.1"
+                return 1
+        fi
+
+}
+
+
+
+rs=1
+while [ $rs -gt 0 ]; do
+    read -p  "Please input the ip:" ip
+    checkip $ip
+    rs=`echo $?`
+done
+
+echo "The IP is right!"
+
+
+
+read -p " Input file name: " filename
+if [ -c $filename ]; then
+   cp $filename /dev
+fi
+
+
+转换文件大小写
+
+方法一：
+for i in `ls`; do
+  if [ ! -f $i ]; then
+     continue
+  fi
+FILE=`echo $i | tr '[A-Z]' '[a-z]'`
+  if [ $FILE != $i ]; then
+     mv $i $FILE
+  fi
+done
+
+方法二：
+
+for i in `ls`; do
+  if [ -f $i ]; then
+FILE=`echo $i | tr '[A-Z]' '[a-z]'`
+     if [ $FILE != $i ]; then
+         mv $i $FILE
+     fi
+  else
+     continue
+  fi
+done
+
+
+
+ssh 批量上传文件
+上传文件大多数用的是ftp，但是用ftp有一点不好，就是本地和远程的目录要对应，这样就要在多个目录下去切换，这样挺麻烦的，如果不注意的话，很有可能传错。所以想了个办法利用scp来批量上传文件或者目录。 注意：保证ssh上传不用输入密码，提前做好ssh互信
+
+要上传的文件列表放到一个test文件中
+[root@node2 test]# cat test    
+/test/aaa    
+/test/nginx.conf    
+
+/test/test.sql    
+/test/pa.txt    
+/test/password 
+
+2、批量上传的脚本
+vi file_upload.sh
+#!/bin/sh
+#
+#read -p "Input Upload Filename: " FILENAME
+#read -p "Input Host Ip Address Or Hostname: " IP
+DATE=`date +%Y_%m_%d_%H`
+if [ $FILENAME ]; then
+  for file in $(sed '/^$/d' $FILENAME); do   #去掉空行 
+    if [ -f $file ]; then                #普通文件  
+      res=`scp $file $IP:$file`      #上传文件  
+      if [ -z $res ]; then             #上传成功  
+        echo $file >> ${DATE}_upload.log   #上传成功的日志  
+      fi
+    elif [ -d $file ]; then             #目录  
+      res=`scp -r $file $IP:$file`
+      if [ -z $res ]; then
+        echo $file >> ${DATE}_upload.log
+      fi
+    fi
+  done
+else
+  echo "no file" >> ${DATE}_error.log
+fi
+上传成功后，返回的是一个空行，上传不成功，什么都不返回
+
+3.上传的格式
+chmod +x upload.sh
+./file_upload.sh test 192.168.1.13    
+test是上传列表文件，192.168.1.13文件要传到的地方。
+
+定时任务
+07 01 * * * /bin/bash /test/file_upload.sh /test/test 192.168.1.20
+
+22 如何执行算术运算 ?
+答：有两种方法来执行算术运算：
+
+1.使用expr命令
+# expr 5 + 2
+
+2.用一个美元符号和方括号（$[ 表达式 ]）例如：
+test=$[16 + 4] && echo $test
