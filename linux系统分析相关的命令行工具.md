@@ -17,7 +17,7 @@ pmap(选项)(参数)
 # pidof nginx
 13312 5371
 
-然后列出某个进程(PID:5633)的信息时如下：
+然后列出某个进程(PID:5371)的信息时如下：
 # pmap -x 5371
 5371:   nginx: worker process                
 Address           Kbytes     RSS   Dirty Mode   Mapping
@@ -42,6 +42,7 @@ Mapping: 分配该内存的模块的名称
 ```
 top命令是Linux下常用的性能分析工具，能够实时显示系统中各个进程的资源占用状况。下面详细介绍它的使用方法。
 
+root@ubuntu:~# top
 top - 01:06:48 up 1:22, 1 user, load average: 0.06, 0.60, 0.48
 Tasks: 29 total, 1 running, 28 sleeping, 0 stopped, 0 zombie
 Cpu(s): 0.3% us, 1.0% sy, 0.0% ni, 98.7% id, 0.0% wa, 0.0% hi, 0.0% si
