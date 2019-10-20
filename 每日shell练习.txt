@@ -678,3 +678,25 @@ test是上传列表文件，192.168.1.13文件要传到的地方。
 
 2.用一个美元符号和方括号（$[ 表达式 ]）例如：
 test=$[16 + 4] && echo $test
+
+23.shell修改文件名并上传到指定的路径
+
+#!/bin/bash
+#author wangjinhuai
+#读取文件
+for i in `ls /tmp`; do
+  #读取文件名
+  #filename=`basename $i`
+  #修改文件名
+  newfilename=`date +%Y%m%d`-$i
+  #修改回原文件
+  #newfilename=`basename $i | awk -F '-' '{print $2}'`
+
+  #重新命名，注意，路径必须是绝对路径，否则，会报错。
+  mv /tmp/$i /tmp/$newfilename 
+  
+  # 上传文件到备份服务器上
+  scp /tmp/* root@192.168.170.10:/root/tmp
+
+  echo $newfilename >> /root/content.txt
+done
