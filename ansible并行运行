@@ -1,0 +1,29 @@
+ansible默认只会创建5个进程,所以一次任务只能同时控制5台机器执行.那如果你有大量的机器需要控制,或者你希望减少进程数,那你可以采取异步执行.ansible的模块可以把task放进后台,然后轮询它.这使得在一定进程数下能让大量需要的机器同时运作起来.
+
+
+使用async和poll这两个关键字便可以并行运行一个任务。
+	async这个关键字触发ansible并行运作任务,而async的值是ansible等待运行这个任务的最大超时值,
+	poll是ansible检查这个任务是否完成的频率时间.
+
+示例:如果你希望在整个集群里面平行的执行一下updatedb这个命令.使用下面的配置
+- hosts: all
+    tasks:
+      - name: Install mlocate
+        yum: name=mlocate state=installed
+
+
+      - name: Run updatedb
+        command: /usr/bin/updatedb
+        async: 300
+        poll: 10
+        
+你会发现当你使用上面的例子控制超过5台机器的时候,command.在上面yum模块会先在5台机器上跑,完成后再继续下面的机器.而上面command模块的任务会一次性在所有机器上都执行了,然后监听它的回调结果。
+
+
+如果你的command是控制机器开启一个进程放到后台,那就不需要检查这个任务是否完成了.你只需要继续其他的动作,最后再使用wait_for这个模块去检查之前的进程是否按预期中开启了便可.只需要把poll这个值设置为0,便可以按上面的要求配置ansible不等待job的完成.
+
+
+最后,或者你还有一种需求是有一个task它是需要运行很长的时间,那你需要设置一直等待这个job完成.这个时候你把async的值设成0便可.
+
+
+总结来说,大概有以下的一些场景你是需要使用到ansible的polling特性的
