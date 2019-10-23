@@ -700,3 +700,66 @@ for i in `ls /tmp`; do
 
   echo $newfilename >> /root/content.txt
 done
+
+2019-10-23
+
+24. 创建一个函数，能接受两个参数：
+1)第一个参数为URL，即可下载的文件；第二个参数为目录，即下载后保存的位置；
+2)如果用户给的目录不存在，则提示用户是否创建；如果创建就继续执行，否则，函数返回一个51的错误值给调用脚本；
+3)如果给的目录存在，则下载文件；下载命令执行结束后测试文件下载成功与否；如果成功，则返回0给调用脚本，否则，返回52给调用脚本；
+
+#!/bin/bash
+URL=$1 # 第一个参数
+DIR=$2  # 第二个参数
+
+download()
+{
+cd $DIR >>/dev/null 2>&1
+if [ $? -ne 0 ];then  # 如果返回状态不为0，表示不存在这样的文件或路径
+	read -p "$DIR is not found,create?(y/n)" answer
+	if [ $answer == "y" ];then
+    		mkdir -p $DIR
+    		cd $DIR
+    		wget $URL 1>/dev/null 2>&1 #判断下载是否成功的状态值
+	else
+	 	returun "51"
+	fi
+fi
+
+wget $URL 1>/dev/null 2>&1  #判断下载是否成功的状态值
+
+if [ $? -eq 0 ]; then  #如果下载不成功（状态值不为0）
+   echo "file is download success."
+else
+   echo "file is download failed"
+   return "52"
+fi
+}
+download $URL $DIR
+echo $?
+
+25.写一个脚本，判断一个指定的脚本是否是语法错误.
+如果有错误，则提醒用户键入Q或者q：无视错误并退出;
+键入vim：可以通过vim打开这个指定的脚本；
+其他：退出；
+
+#!/bin/bash
+read -p "input script name: " file
+
+if [ -f $file ];then
+    sh -n $file > /dev/null 2>&1 
+	if [ $? -ne 0 ];then
+	read -p "你的文件有语法错误" answer
+	case $answer in
+		Q|q)
+			exit 0
+			;;
+		vim)
+			vim $file
+			;;
+		esac
+	fi
+else
+	echo "$file is no found."
+	exit 1
+fi
