@@ -1,2 +1,0 @@
-hollo world
-hello time
