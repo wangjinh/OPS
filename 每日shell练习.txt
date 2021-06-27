@@ -766,3 +766,29 @@ else
 	echo "$file is no found."
 	exit 1
 fi
+
+26. 实现通过key获取value的值, 完成复制操作
+#!/bin/bash
+
+# 实现通过key获取value的值, 判断key的取值范围来,决定value要不要被copy
+
+# get index name map data dircetory
+NDataIndex=$(curl -XGET 'localhost:9200/_cat/indices?v&pretty' | awk '{print $3, $4}')
+
+cd /usr/local/ms/elk/elasticsearch-6.4.2/data/nodes/0/indices
+mkdir /mnt/usb
+# Get the correspondence between all indexes and data directories, write to the file
+echo "${NDataIndex}"  > /tmp/test.log
+
+# character between key and value, there is empty
+IFS=' '
+# Read the key and value in the file in a loop
+while read k v; do
+   #echo "$k  :  $v"
+   if [ ${k##*_} -gt 20210320 -a ${k##*_} -lt 20210401 ]; then
+         echo "${k##*_} copied" > /tmp/elk.log
+         cp -rf $v /mnt/usb/
+   else
+         echo "${k##*_} not copied" > /tmp/elknot.log
+   fi  
+done < /tmp/test.log
